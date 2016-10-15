@@ -1,0 +1,74 @@
+#!/usr/bin/env ruby
+require "bundler/setup"
+Bundler.require
+
+CONTEXT_FREE_ART_VECTOR_SIZE_LIMIT = 99
+
+class ContextFreePixel
+  def initialize(int_pixel)
+    @h, @sat, @b, @a = ChunkyPNG::Color.to_hsv(int_pixel, true)
+  end
+
+  def h
+    "%.2f" % @h
+  end
+
+  def sat
+    "%.2f" % @sat
+  end
+
+  def b
+    "%.2f" % @b
+  end
+
+  def a
+    "%.2f" % (@a / 255.0)
+  end
+end
+
+template = lambda do |image, pixels|
+  <<END
+image_width   = #{image.width}
+image_height  = #{image.height}
+image_hues    = #{pixels.collect(&:h).join(", ")}
+image_sats    = #{pixels.collect(&:sat).join(", ")}
+image_brights = #{pixels.collect(&:b).join(", ")}
+image_alphas  = #{pixels.collect(&:a).join(", ")}
+
+CF::Background = [b -0.95]
+startshape image[a -1]
+shape image {
+	loop xx=image_width [] {
+		loop yy=image_height [] {
+			index = xx + (yy * image_height)
+			cell[
+				x xx
+				y -yy
+				h image_hues[index]
+				sat image_sats[index]
+				b image_brights[index]
+				a image_alphas[index]
+			]
+		}
+	}
+}
+
+shape cell {
+	SQUARE[]
+}
+END
+end
+
+unless ARGV.length == 1
+  puts "Usage: pngifer inputfile.png\n"
+  exit
+end
+
+input_file = ARGV[0]
+image = ChunkyPNG::Image.from_file(input_file)
+pixels = image.pixels.collect { |int_pixel| ContextFreePixel.new(int_pixel) }
+if pixels.length > CONTEXT_FREE_ART_VECTOR_SIZE_LIMIT
+  raise "ERR: Too many pixels. ContextFreeArt limits vectors to a size of #{CONTEXT_FREE_ART_VECTOR_SIZE_LIMIT} or less"
+end
+
+puts template.call(image, pixels)
