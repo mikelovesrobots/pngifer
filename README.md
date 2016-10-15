@@ -9,6 +9,8 @@ for small pixel art.
 
 If that sounds okay to you, you can still make some amazing things.
 
+![Sample render](https://raw.githubusercontent.com/mikelovesrobots/pngifer/master/sample-render.png)
+
 ## Installation
 
 * Clone the repo
