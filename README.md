@@ -13,6 +13,7 @@ If that sounds okay to you, you can still make some amazing things.
 
 ## Installation
 
+* Install ruby (this was built with v2.3.1)
 * Clone the repo
 * `gem install bundler`
 * `bundle install`
